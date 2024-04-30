@@ -1,7 +1,7 @@
 ﻿using IWantApp.Domain.Products;
 using Microsoft.EntityFrameworkCore;
 
-namespace IWantApp.Endpoints.Categories.Infra.Data
+namespace IWantApp.Infra.Data
 {
     public class ApplicationDbContext : DbContext
     {

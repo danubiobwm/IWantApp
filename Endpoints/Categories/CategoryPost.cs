@@ -1,4 +1,5 @@
-﻿using IWantApp.Endpoints.Categories.Infra.Data;
+﻿
+using IWantApp.Infra.Data;
 
 namespace IWantApp.Endpoints.Categories;
 
