@@ -13,14 +13,17 @@ public class CategoryPost
 
     public static IResult Action(CategoryRequest categoryRequest, ApplicationDbContext context)
     {
-        var category = new Domain.Products.Category
+        var category = new Domain.Products.Category(categoryRequest.Name, "test", "Test");
+      
+
+        if (!category.IsValid) 
         {
-         Name = categoryRequest.Name,
-         CreatedBy = "test", 
-         CreatedOn = DateTime.Now,
-         EditedBy = "Test",
-         EditedOn = DateTime.Now,
-        };
+            var erros = category.Notifications
+                .GroupBy(g => g.Key)
+                .ToDictionary(g=>g.Key, g => g.Select(x => x.Message).ToArray());
+            return Results.ValidationProblem(erros);
+
+        }
 
         context.Categories.Add(category);
         context.SaveChanges();
