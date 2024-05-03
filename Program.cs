@@ -9,7 +9,12 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddSqlServer<ApplicationDbContext>(
             builder.Configuration["ConnectionStrings:IWantDb"]);
-        builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+        builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = true;
+           options.Password.RequireDigit = true;
+            options.Password.RequireUppercase = true;
+         })
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddEndpointsApiExplorer();
@@ -25,9 +30,10 @@ internal class Program
 
         app.UseHttpsRedirection();
 
-        app.MapMethods(CategoryPost.Template, CategoryPost.Methods, CategoryPost.Handle);
+        app.MapMethods(EmployeesPost.Template, EmployeesPost.Methods, EmployeesPost.Handle);
         app.MapMethods(CategoryGetAll.Template, CategoryGetAll.Methods, CategoryGetAll.Handle);
         app.MapMethods(CategoryPut.Template, CategoryPut.Methods, CategoryPut.Handle);
+        app.MapMethods(EmployeePost.Template, EmployeePost.Methods, EmployeePost.Handle);
 
         app.Run();
     }
