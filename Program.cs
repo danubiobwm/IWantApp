@@ -15,10 +15,11 @@ internal class Program
            options.Password.RequireDigit = true;
             options.Password.RequireUppercase = true;
          })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddScoped<QueryAllUsersWithClaimName>();
 
         var app = builder.Build();
 
@@ -34,6 +35,7 @@ internal class Program
         app.MapMethods(CategoryGetAll.Template, CategoryGetAll.Methods, CategoryGetAll.Handle);
         app.MapMethods(CategoryPut.Template, CategoryPut.Methods, CategoryPut.Handle);
         app.MapMethods(EmployeePost.Template, EmployeePost.Methods, EmployeePost.Handle);
+        app.MapMethods(EmployeeGetAll.Template, EmployeeGetAll.Methods, EmployeeGetAll.Handle);
 
         app.Run();
     }
