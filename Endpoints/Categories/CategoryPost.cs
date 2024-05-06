@@ -3,7 +3,7 @@ using IWantApp.Infra.Data;
 
 namespace IWantApp.Endpoints.Categories;
 
-public class EmployeesPost
+public class CategoryPost
 {
     public static string Template => "/categories";
 

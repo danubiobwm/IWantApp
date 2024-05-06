@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 
-public class EmployeePost
+public class EmployeesPost
 {
     public static string Template => "/employees";
 
