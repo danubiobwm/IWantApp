@@ -2,76 +2,89 @@ using IWantApp.Endpoints.Categories;
 using IWantApp.Endpoints.Security;
 using IWantApp.Infra.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        // Configuration
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false);
+
+        // Database
         builder.Services.AddSqlServer<ApplicationDbContext>(
             builder.Configuration["ConnectionStrings:IWantDb"]);
+
+        // Identity
         builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequireDigit = true;
-        options.Password.RequireUppercase = true;
-    })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireDigit = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequiredLength = 3;
+    }).AddEntityFrameworkStores<ApplicationDbContext>();
 
-    builder.Services.AddAuthorization(options =>
-    {
-        // Aqui você pode adicionar políticas de autorização, se necessário
-    });
 
-        builder.Services.AddAuthentication(options =>
-    {
+        // Authentication
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateActor = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtBearerTokenSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
+                };
+            });
 
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-    }).AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters()
+        // Authorization
+        builder.Services.AddAuthorization(options =>
         {
-            ValidateActor = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtBearerTokenSettings:IWantAppIssuer"],
-            ValidAudience = builder.Configuration["JwtBearerTokenSettings:IWantAppAudience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
-        };
-    });
+            options.FallbackPolicy = new AuthorizationPolicyBuilder()
+              .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+              .RequireAuthenticatedUser()
+              .Build();
+            options.AddPolicy("EmployeePolicy", p =>
+                p.RequireAuthenticatedUser().RequireClaim("EmployeeCode"));
+        });
 
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        // Add other dependencies
         builder.Services.AddScoped<QueryAllUsersWithClaimName>();
 
-        var app = builder.Build();
-        app.UseAuthorization();
-        app.UseAuthentication();
 
+        // Swagger
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+
+        var app = builder.Build();
+
+        // Middleware
+        app.UseAuthentication();
+        app.UseAuthorization();
+        
+
+
+        // Swagger in development
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-            });
+            app.UseSwaggerUI();
         }
 
         app.UseHttpsRedirection();
-
+        // Endpoint mappings
         app.MapMethods(CategoryPost.Template, CategoryPost.Methods, CategoryPost.Handle);
         app.MapMethods(CategoryGetAll.Template, CategoryGetAll.Methods, CategoryGetAll.Handle);
         app.MapMethods(CategoryPut.Template, CategoryPut.Methods, CategoryPut.Handle);
