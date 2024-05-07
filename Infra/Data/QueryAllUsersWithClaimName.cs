@@ -12,7 +12,7 @@ public class QueryAllUsersWithClaimName
     {
         this.configuration = configuration;
     }
-    public IEnumerable<EmployeResponse> Execute(int? page, int? rows)
+    public async Task <IEnumerable<EmployeResponse>> Execute(int? page, int? rows)
     {
         var db = new SqlConnection(configuration["ConnectionStrings:IWantDb"]);
         var query = @"select Email, ClaimValue as Name
@@ -20,7 +20,7 @@ public class QueryAllUsersWithClaimName
                 AspNetUserClaims c on u.Id = c.UserId and ClaimType = 'Name'
                 order by Name offset (@page - 1)* @rows ROWS fetch next @rows rows only";
 
-        return db.Query<EmployeResponse>(query, new { page, rows });
+        return await db.QueryAsync<EmployeResponse>(query, new { page, rows });
 
     }
 }
