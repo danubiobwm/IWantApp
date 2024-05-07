@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 internal class Program
@@ -31,22 +32,6 @@ internal class Program
     }).AddEntityFrameworkStores<ApplicationDbContext>();
 
 
-        // Authentication
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateActor = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtBearerTokenSettings:Issuer"],
-                    ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
-                };
-            });
-
         // Authorization
         builder.Services.AddAuthorization(options =>
         {
@@ -57,6 +42,28 @@ internal class Program
             options.AddPolicy("EmployeePolicy", p =>
                 p.RequireAuthenticatedUser().RequireClaim("EmployeeCode"));
         });
+
+
+        // Authentication
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateActor = true,
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidIssuer = builder.Configuration["JwtBearerTokenSettings:Issuer"],
+                ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
+            };
+            });
 
 
         // Add other dependencies
@@ -70,11 +77,6 @@ internal class Program
 
         var app = builder.Build();
 
-        // Middleware
-        app.UseAuthentication();
-        app.UseAuthorization();
-        
-
 
         // Swagger in development
         if (app.Environment.IsDevelopment())
@@ -82,6 +84,11 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        // Middleware
+        app.UseAuthentication();
+        app.UseAuthorization();
+
 
         app.UseHttpsRedirection();
         // Endpoint mappings
