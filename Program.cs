@@ -3,7 +3,9 @@ using IWantApp.Endpoints.Security;
 using IWantApp.Infra.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -100,6 +102,18 @@ internal class Program
         app.MapMethods(TokenPost.Template, TokenPost.Methods, TokenPost.Handle);
 
 
+        //Filter Error
+        app.UseExceptionHandler("/error");
+        app.Map("/error", (HttpContext http) => { 
+            var error = http.Features?.Get<IExceptionHandlerFeature>()?.Error;
+
+            if (error != null) { 
+               if (error is SqlException)
+                    return Results.Problem(title: "Database out of service", statusCode: 500);
+            }
+
+            return Results.Problem(title:"An error ocurred", statusCode:500);
+        });
 
         app.Run();
     }
