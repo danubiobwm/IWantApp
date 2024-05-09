@@ -1,10 +1,11 @@
 ﻿
 using IWantApp.Endpoints;
 using IWantApp.Endpoints.Employees;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-
+[Authorize]
 public class EmployeesPost
 {
     public static string Template => "/employees";

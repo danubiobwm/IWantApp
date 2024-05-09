@@ -48,7 +48,7 @@ namespace IWantApp.Endpoints.Security
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Audience = configuration["JwtBearerTokenSettings:Audience"],
                 Issuer = configuration["JwtBearerTokenSettings:Issuer"],
-                Expires = DateTime.UtcNow.AddMinutes(20)
+                Expires = environment.IsDevelopment() || environment.IsStaging() ? DateTime.UtcNow.AddHours(1) : DateTime.UtcNow.AddMinutes(20)
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

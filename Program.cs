@@ -1,20 +1,37 @@
 using IWantApp.Endpoints.Categories;
 using IWantApp.Endpoints.Security;
 using IWantApp.Infra.Data;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
+using IWantApp.Endpoints.Products;
+using System.Text.Json;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        //log para db
+        builder.Host.UseSerilog((context, configuration) =>
+        {
+            configuration
+                .WriteTo.Console()
+                .WriteTo.MSSqlServer(
+                    context.Configuration["ConnectionStrings:IWantDb"],
+                    sinkOptions: new MSSqlServerSinkOptions()
+                    {
+                        AutoCreateSqlTable = true,
+                        TableName = "LogAPI"
+                    });
+        });
 
         // Configuration
         builder.Configuration.AddJsonFile("appsettings.json", optional: false);
@@ -65,7 +82,7 @@ internal class Program
                 ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
             };
-            });
+        });
 
 
         // Add other dependencies
@@ -100,19 +117,25 @@ internal class Program
         app.MapMethods(EmployeesPost.Template, EmployeesPost.Methods, EmployeesPost.Handle);
         app.MapMethods(EmployeeGetAll.Template, EmployeeGetAll.Methods, EmployeeGetAll.Handle);
         app.MapMethods(TokenPost.Template, TokenPost.Methods, TokenPost.Handle);
+        app.MapMethods(ProductPost.Template, ProductPost.Methods, ProductPost.Handle);
+        app.MapMethods(ProductGetAll.Template, ProductGetAll.Methods, ProductGetAll.Handle);
 
 
         //Filter Error
         app.UseExceptionHandler("/error");
-        app.Map("/error", (HttpContext http) => { 
+        app.Map("/error", (HttpContext http) => {
+
             var error = http.Features?.Get<IExceptionHandlerFeature>()?.Error;
 
-            if (error != null) { 
-               if (error is SqlException)
-                    return Results.Problem(title: "Database out of service", statusCode: 500);
+            if (error != null)
+            {
+                if (error is SqlException)
+                    return Results.Problem(title: "Database out", statusCode: 500);
+                else if (error is BadHttpRequestException)
+                    return Results.Problem(title: "Error to convert data to other type. See all the information sent", statusCode: 500);
             }
 
-            return Results.Problem(title:"An error ocurred", statusCode:500);
+            return Results.Problem(title: "An error ocurred", statusCode: 500);
         });
 
         app.Run();
