@@ -119,6 +119,7 @@ internal class Program
         app.MapMethods(TokenPost.Template, TokenPost.Methods, TokenPost.Handle);
         app.MapMethods(ProductPost.Template, ProductPost.Methods, ProductPost.Handle);
         app.MapMethods(ProductGetAll.Template, ProductGetAll.Methods, ProductGetAll.Handle);
+        app.MapMethods(ProductGetShowcase.Template, ProductGetShowcase.Methods, ProductGetShowcase.Handle);
 
 
         //Filter Error

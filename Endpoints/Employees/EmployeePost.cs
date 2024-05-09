@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-[Authorize]
+
+
 public class EmployeesPost
 {
     public static string Template => "/employees";
@@ -14,6 +15,7 @@ public class EmployeesPost
 
     public static Delegate Handle => Action;
 
+    [AllowAnonymous]
     public static async Task<IResult> Action(EmployeResquest employeResquest, UserManager<IdentityUser> userManager, HttpContext http)
     {
 
