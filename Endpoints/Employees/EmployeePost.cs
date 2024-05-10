@@ -1,5 +1,7 @@
 ﻿
+using IWantApp.Domain.Users;
 using IWantApp.Endpoints;
+using IWantApp.Endpoints.Clients;
 using IWantApp.Endpoints.Employees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,17 +17,10 @@ public class EmployeesPost
 
     public static Delegate Handle => Action;
 
-    [AllowAnonymous]
-    public static async Task<IResult> Action(EmployeResquest employeResquest, UserManager<IdentityUser> userManager, HttpContext http)
+    [Authorize(Policy = "EmployeePolicy")]
+    public static async Task<IResult> Action(EmployeResquest employeResquest, UserCreator userCreator, HttpContext http)
     {
-
-       var userId = http.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-       var newUser = new IdentityUser { UserName = employeResquest.Email, Email = employeResquest.Email };
-       var result = await userManager.CreateAsync(newUser, employeResquest.Password);
-
-        if (!result.Succeeded) 
-            return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
-
+        var userId = http.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value; 
         var userClaims = new List<Claim>
         {
             new Claim("EmployeeCode", employeResquest.EmployeeCode),
@@ -33,15 +28,18 @@ public class EmployeesPost
             new Claim("CreatedBy", userId)
         };
 
-        var claimResult = await userManager.AddClaimsAsync(newUser, userClaims);
+        (IdentityResult identity, string userId) result =
+            await userCreator.Create(employeResquest.Email, employeResquest.Password, userClaims);
 
-        if (!claimResult.Succeeded)
-            return Results.BadRequest(claimResult.Errors.First());
+        if (!result.identity.Succeeded)
+        {
+            return Results.ValidationProblem(result.identity.Errors.ConvertToProblemDetails());
+        }
 
 
 
-        return Results.Created($"/employees/{newUser.Id}", newUser.Id);
+
+        return Results.Created($"/employees/{result.userId}", result.userId);
     }
 
 }
-

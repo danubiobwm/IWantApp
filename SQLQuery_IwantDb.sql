@@ -70,3 +70,6 @@ VALUES
     ('1', '1'), -- Produto 1 no Pedido 1 (Smartphone)
     ('2', '2'), -- Produto 2 no Pedido 2 (Camiseta)
     ('2', '3'); -- Produto 3 no Pedido 2 (Livro de Ficção)
+
+
+    SELECT *from AspNetUsers

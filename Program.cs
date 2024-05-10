@@ -11,7 +11,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using IWantApp.Endpoints.Products;
-using System.Text.Json;
+using IWantApp.Domain.Users;
 
 internal class Program
 {
@@ -87,6 +87,7 @@ internal class Program
 
         // Add other dependencies
         builder.Services.AddScoped<QueryAllUsersWithClaimName>();
+        builder.Services.AddScoped<UserCreator>();
 
 
         // Swagger
@@ -120,6 +121,8 @@ internal class Program
         app.MapMethods(ProductPost.Template, ProductPost.Methods, ProductPost.Handle);
         app.MapMethods(ProductGetAll.Template, ProductGetAll.Methods, ProductGetAll.Handle);
         app.MapMethods(ProductGetShowcase.Template, ProductGetShowcase.Methods, ProductGetShowcase.Handle);
+        app.MapMethods(ClientsPost.Template, ClientsPost.Methods, ClientsPost.Handle);
+        app.MapMethods(ClientsGet.Template, ClientsGet.Methods, ClientsGet.Handle);
 
 
         //Filter Error
