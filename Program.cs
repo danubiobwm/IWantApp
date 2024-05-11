@@ -60,6 +60,8 @@ internal class Program
               .Build();
             options.AddPolicy("EmployeePolicy", p =>
                 p.RequireAuthenticatedUser().RequireClaim("EmployeeCode"));
+            options.AddPolicy("CpfPolicy", p =>
+                p.RequireAuthenticatedUser().RequireClaim("Cpf"));
         });
 
 
@@ -121,8 +123,9 @@ internal class Program
         app.MapMethods(ProductPost.Template, ProductPost.Methods, ProductPost.Handle);
         app.MapMethods(ProductGetAll.Template, ProductGetAll.Methods, ProductGetAll.Handle);
         app.MapMethods(ProductGetShowcase.Template, ProductGetShowcase.Methods, ProductGetShowcase.Handle);
-        app.MapMethods(ClientsPost.Template, ClientsPost.Methods, ClientsPost.Handle);
+        app.MapMethods(OrderPost.Template, OrderPost.Methods, OrderPost.Handle);
         app.MapMethods(ClientsGet.Template, ClientsGet.Methods, ClientsGet.Handle);
+        app.MapMethods(OrderGet.Template, OrderGet.Methods, OrderGet.Handle);
 
 
         //Filter Error

@@ -53,7 +53,7 @@ VALUES
 -- Inserção de dados na tabela Products
 INSERT INTO Products (Id, Name, CategoryId, Description, HasStock, Active, CreatedBy, CreatedOn, EditedBy, EditedOn, Price)
 VALUES
-    ('1', 'Smartphone', '1', 'Um ótimo smartphone', 1, 1, 'System', GETUTCDATE(), 'System', GETUTCDATE(), 1000.00),
+    ('1', 'Smartphone', '1', 'Um ótimo smartphone', 1, 1, 'System', GETUTCDATE(), 'System', GETUTCDATE(), 1000),
     ('2', 'Camiseta', '2', 'Camiseta confortável', 1, 1, 'System', GETUTCDATE(), 'System', GETUTCDATE(), 50.00),
     ('3', 'Livro de Ficção', '3', 'Um ótimo livro de ficção', 1, 1, 'System', GETUTCDATE(), 'System', GETUTCDATE(), 30.00);
 

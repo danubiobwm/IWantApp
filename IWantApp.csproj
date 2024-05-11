@@ -32,8 +32,4 @@
     <None Include="C:\Users\progd\Dev\dotnetProjects\IWantApp\.editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Domain\Orders\" />
-  </ItemGroup>
-
 </Project>
